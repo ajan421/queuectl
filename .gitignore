@@ -36,6 +36,7 @@ ENV/
 .queuectl/
 *.db
 *.db-journal
+temp*.json
 
 # Testing
 .pytest_cache/

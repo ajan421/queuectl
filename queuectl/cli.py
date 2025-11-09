@@ -7,8 +7,12 @@ import os
 import signal
 import sys
 import time
+import webbrowser
 from pathlib import Path
 from typing import Dict, Any
+
+if os.name == "nt":
+    import ctypes
 
 from .storage import Storage
 from .config import Config
@@ -49,27 +53,60 @@ def save_worker_pids(pids: list):
         json.dump(pids, f)
 
 
+def is_process_running(pid: int) -> bool:
+    """Check whether a process is running."""
+    if pid is None:
+        return False
+
+    if os.name == "nt":
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        handle = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+        if handle:
+            ctypes.windll.kernel32.CloseHandle(handle)
+            return True
+        return False
+    else:
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return False
+        return True
+
+
 def stop_all_workers():
     """Stop all running workers."""
     pids = load_worker_pids()
     stopped = []
+    remaining = []
     
     for pid in pids:
+        stopped_successfully = False
         try:
             os.kill(pid, signal.SIGTERM)
-            stopped.append(pid)
+            stopped_successfully = True
         except ProcessLookupError:
             # Process already dead
-            pass
+            stopped_successfully = True
+        except OSError as e:
+            # On Windows, ERROR_INVALID_PARAMETER (87) indicates the PID is no longer valid
+            if os.name == "nt" and getattr(e, "winerror", None) == 87:
+                stopped_successfully = True
+            else:
+                remaining.append(pid)
+                click.echo(f"Error stopping worker {pid}: {e}", err=True)
         except Exception as e:
+            remaining.append(pid)
             click.echo(f"Error stopping worker {pid}: {e}", err=True)
+        
+        if stopped_successfully:
+            stopped.append(pid)
     
     # Wait a bit for graceful shutdown
     if stopped:
         time.sleep(2)
     
-    # Clear PIDs file
-    save_worker_pids([])
+    # Remove any PIDs that are still running
+    save_worker_pids([pid for pid in remaining if is_process_running(pid)])
     
     return len(stopped)
 
@@ -192,12 +229,15 @@ def status():
     click.echo("\nActive Workers:")
     pids = load_worker_pids()
     if pids:
+        active_pids = []
         for pid in pids:
-            try:
-                os.kill(pid, 0)  # Check if process exists
+            if is_process_running(pid):
                 click.echo(f"  Worker (PID: {pid}) - Running")
-            except ProcessLookupError:
+                active_pids.append(pid)
+            else:
                 click.echo(f"  Worker (PID: {pid}) - Not running")
+        if len(active_pids) != len(pids):
+            save_worker_pids(active_pids)
     else:
         click.echo("  No active workers")
     

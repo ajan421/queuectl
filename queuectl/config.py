@@ -13,6 +13,10 @@ class Config:
         "max_retries": 3,
         "backoff_base": 2,
         "poll_interval": 1,
+        "default_timeout": 10,
+        "default_priority": 0,
+        "dashboard_host": "127.0.0.1",
+        "dashboard_port": 5000,
     }
     
     def __init__(self, config_path: str = None):

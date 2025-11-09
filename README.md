@@ -5,6 +5,33 @@
 
 QueueCTL is a production-grade CLI tool for managing background jobs with worker processes, automatic retries with exponential backoff, and a Dead Letter Queue (DLQ) for permanently failed jobs. It provides a simple yet powerful interface for executing and managing asynchronous tasks in a reliable and scalable manner.
 
+## 🎥 Demo Video
+
+**Watch the complete feature demonstration (2 minutes):**
+
+[![QueueCTL Demo Video](https://img.youtube.com/vi/rur8wBvwfPo/maxresdefault.jpg)](https://www.youtube.com/watch?v=rur8wBvwfPo)
+
+**👆 Click above to watch the demo on YouTube**
+
+**What's covered in the demo:**
+- ✅ Job enqueueing and management
+- ✅ Single and multiple worker processing
+- ✅ Priority queue system (bonus feature)
+- ✅ Retry mechanism with exponential backoff
+- ✅ Dead Letter Queue (DLQ)
+- ✅ Job timeout handling (bonus feature)
+- ✅ Configuration management
+- ✅ Database inspection and statistics
+
+**Want to try it yourself?** Run the demo scripts:
+```bash
+# Full interactive demo (~60 seconds)
+.\demo.ps1
+
+# Quick demo (~30 seconds, silent mode)
+.\demo_fast.ps1
+```
+
 ## Table of Contents
 
 - [Features](#features)

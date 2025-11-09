@@ -28,6 +28,7 @@ setup(
     ],
     install_requires=[
         "click>=8.1.0",
+        "Flask>=2.3.0",
     ],
     entry_points={
         "console_scripts": [
